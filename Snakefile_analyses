@@ -13,7 +13,7 @@ rule assemble:
     "Running skesa on sample {sample}"
   shell:
   """
-    skesa --reads {input.R1},{input.R2} > {output.contigs}
+    skesa --fastq {input.R1},{input.R2} -- > {output.contigs}
   """
   
 rule mlst:
