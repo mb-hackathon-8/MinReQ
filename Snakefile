@@ -1,9 +1,13 @@
-IDS, = glob_wildcards("input/assembly/{sample}_genomic.fna")
+#IDS, = glob_wildcards("input/assembly/{sample}_genomic.fna")
+
+IDS = ['GCF_001022055.1_ASM102205v1', 'GCF_002741155.1_ASM274115v1', 'GCF_016903755.1_ASM1690375v1']
+
+
 
 rule all:
   input:
-#    expand("data/simulated_{cov}_{trimmed}/{sample}_R1.fastq.gz", sample=IDS, cov=['highcov', 'lowcov'], trimmed=['trimmed', 'raw'])
-    expand("data/simulated_{trimmed}/{sample}_R1.fastq.gz", sample=IDS, trimmed=['trimmed', 'raw'])
+    rules.trim_lowcov.output,
+    rules.trim_highcov.output
 
 rule simulate_reads:
   input:
@@ -21,11 +25,51 @@ rule simulate_reads:
     "logs/simulate_reads/{sample}.log"
   shell:
     """
-    iss --output {params.basename} 2>{log}
+    NUMBER_READS=$(python scripts/number_reads.py {input}) 
+    iss generate --genome {input} --model miseq -n $NUMBER_READS --output {params.basename} 
     gzip {params.basename}_R1.fastq {params.basename}_R2.fastq 2>>{log}
     """ 
 
-rule trim:
+
+rule subsample:
+  input:
+    R1 = rules.simulate_reads.output.R1,
+    R2 = rules.simulate_reads.output.R2,
+  output: 
+    R1 = "data/simulated_raw/{sample}_lowcov_R1.fastq.gz" ,
+    R2 = "data/simulated_raw/{sample}_lowcov_R2.fastq.gz"
+  conda:
+    "conda_env/rasusa.yaml"
+  threads: 1 
+  params: 0.2
+  shell: 
+    """
+    rasusa -i {input.R1} -i {input.R2} --frac {params} -o {output.R1} -o {output.R2}
+    """
+
+
+
+rule trim_lowcov:
+  input:
+    R1 = rules.subsample.output.R1,
+    R2 = rules.subsample.output.R2 
+  output:
+    R1 = "data/simulated_trimmed/{sample}_lowcov_R1.fastq.gz",
+    R2 = "data/simulated_trimmed/{sample}_lowcov_R2.fastq.gz",
+  params:
+    general = "-e 15 -q 15 -u 40 -n 5 -l 15 -Y 30"
+  conda:
+    "conda_env/fastp.yaml"
+  message:
+    "Running fastp on sample {wildcards.sample}"
+  log: "logs/trim/{sample}.log"
+  shell:
+    """
+    fastp {params.general} --in1 {input.R1} --in2 {input.R2} --out1 {output.R1} --out2 {output.R2} 2>{log}
+    """
+    
+
+rule trim_highcov:
   input:
     R1 = "data/simulated_raw/{sample}_R1.fastq.gz",
     R2 = "data/simulated_raw/{sample}_R2.fastq.gz",
@@ -44,31 +88,3 @@ rule trim:
     fastp {params.general} --in1 {input.R1} --in2 {input.R2} --out1 {output.R1} --out2 {output.R2} 2>{log}
     """
     
-#rule assemble:
-#  input:
-#  output:
-#  params:
-#  conda:
-#  message:
-#    "Running XXX on sample {}
-#  shell:
-#    
-#rule mlst:
-#  input:
-#  output:
-#  params:
-#  conda:
-#  message:
-#        "Running mlst on sample {}"
-#  shell:
-#    
-#    
-#rule amr: ### steal from https://github.com/pha4ge/hAMRonization_workflow/tree/master/rules
-#  input:
-#  output:
-#  params:
-#  conda:
-#  message:
-#    "Running XXX on sample {}
-#  shell:
-#    
