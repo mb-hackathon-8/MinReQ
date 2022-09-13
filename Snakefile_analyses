@@ -8,6 +8,12 @@ IDS_UNIQ = set(IDS)
 TRIMMED_UNIQ = set(TRIMMED)
 COV_UNIQ = set(COV)
 
+rule all:
+  input:
+    expand("data/amr/{sample}_{trimmed}_{cov}_amr.txt", sample = IDS_UNIQ, trimmed = TRIMMED_UNIQ, cov = COV_UNIQ),
+    expand("data/assembly/{sample}_{trimmed}_{cov}_contigs.fa, sample = IDS_UNIQ, trimmed = TRIMMED_UNIQ, cov = COV_UNIQ),
+    expand("data/mlst/{sample}_{trimmed}_{cov}_mlst.txt", sample = IDS_UNIQ, trimmed = TRIMMED_UNIQ, cov = COV_UNIQ)
+
 rule assemble:
   input:
     R1 = "data/simulated_trimmed/{sample}_{trimmed}_{cov}_R1.fastq.gz",
@@ -28,7 +34,7 @@ rule mlst:
   input:
     rules.assemble.output.contigs
   output:
-    "data/mlst/{sample}_mlst.txt"
+    "data/mlst/{sample}_{trimmed}_{cov}_mlst.txt"
   threads: 1
   params: None
   conda:
@@ -45,7 +51,7 @@ rule amr: ### steal from https://github.com/pha4ge/hAMRonization_workflow/tree/m
   input:
     rules.assemble.output.contigs
   output:
-    "data/amr/{sample}_amr.txt"
+    "data/amr/{sample}_{trimmed}_{cov}_amr.txt"
   params: None
   conda:
     "envs/abricate.yaml"
