@@ -1,0 +1,5 @@
+channels:
+- bioconda
+- conda-forge
+dependencies:
+- insilicoseq=1.5.4
