@@ -1,0 +1,33 @@
+
+
+rule assemble:
+ input:
+ output:
+  params:
+  conda:
+    "envs/skesa_env.yaml"
+  message:
+    "Running skesa on sample {sample}"
+      log:
+    "logs/simulate_reads/{sample}.log"
+  shell:
+    
+rule mlst:
+  input:
+  output:
+  params:
+  conda:
+  message:
+        "Running mlst on sample {}"
+  shell:
+    
+    
+#rule amr: ### steal from https://github.com/pha4ge/hAMRonization_workflow/tree/master/rules
+#  input:
+#  output:
+#  params:
+#  conda:
+#  message:
+#    "Running XXX on sample {}
+#  shell:
+#    
