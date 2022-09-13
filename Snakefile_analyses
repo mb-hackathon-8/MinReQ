@@ -16,14 +16,21 @@ rule assemble:
     skesa --fastq {input.R1},{input.R2} -- > {output.contigs}
   """
   
-#rule mlst:
-#  input:
-#  output:
-#  params:
-#  conda:
-#  message:
-#        "Running mlst on sample {}"
-#  shell:
+rule mlst:
+  input:
+    rules.assemble.output.contigs
+  output:
+    "data/mlst/{sample}_mlst.txt"
+  threads: 1
+  params: None
+  conda:
+      "envs/mlst.yaml"
+  message:
+        "Running mlst on sample {}"
+  shell:
+    """
+      mlst -q {input} > {output}
+    """
     
     
 #rule amr: ### steal from https://github.com/pha4ge/hAMRonization_workflow/tree/master/rules
