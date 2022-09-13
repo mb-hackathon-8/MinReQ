@@ -33,12 +33,18 @@ rule mlst:
     """
     
     
-#rule amr: ### steal from https://github.com/pha4ge/hAMRonization_workflow/tree/master/rules
-#  input:
-#  output:
-#  params:
-#  conda:
+rule amr: ### steal from https://github.com/pha4ge/hAMRonization_workflow/tree/master/rules
+  input:
+    rules.assemble.output.contigs
+  output:
+    "data/amr/{sample}_amr.txt"
+  params: None
+  conda:
+    "envs/abricate.yaml"
 #  message:
-#    "Running XXX on sample {}
-#  shell:
-#    
+#    "Running XXX on sample {wildcard.sa}
+  shell:
+    """
+    abricate -q  {input} > {output}
+    """
+  
