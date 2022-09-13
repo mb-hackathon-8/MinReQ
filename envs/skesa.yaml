@@ -1,0 +1,6 @@
+name: skesa                                                        
+channels:                                                                                                                             
+  - bioconda                                                                                                                            
+  - defaults                                                       
+dependencies:                                                                                                                         
+  - skesa=2.3.0=h4ef8376_0
