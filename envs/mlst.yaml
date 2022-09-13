@@ -1,0 +1,5 @@
+name: mlst
+channels:
+  - bioconda
+dependencies:
+  - mlst
