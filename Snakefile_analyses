@@ -1,5 +1,12 @@
 IDS, = glob_wildcards("input/assembly/{sample}_genomic.fna")
 
+
+rule all:
+  input: 
+    expand("data/assembly/{sample}_contigs.fa", sample = IDS),
+    expand("data/mlst/{sample}_mlst.txt", sample = IDS),
+    expand("data/amr/{sample}_amr.txt", sample = IDS)
+
 rule assemble:
   input:
     R1 = "data/simulated_trimmed/{sample}_R1.fastq.gz",
