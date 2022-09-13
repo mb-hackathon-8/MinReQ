@@ -6,19 +6,21 @@ IDS = ['GCF_001022055.1_ASM102205v1', 'GCF_002741155.1_ASM274115v1', 'GCF_016903
 
 rule all:
   input:
-    rules.trim_lowcov.output,
-    rules.trim_highcov.output
+#    rules.trim_lowcov.output,
+#    rules.trim_highcov.output,
+    expand("data/simulated/{sample}_{trimmed}_{cov}_R1.fastq.gz", sample = IDS, trimmed = ['trimmed', 'raw'], cov = ['highcov', 'lowcov'])
+
 
 rule simulate_reads:
   input:
     "input/assembly/{sample}_genomic.fna"
   output:
-    R1 = "data/simulated_raw/{sample}_R1.fastq.gz",
-    R2 = "data/simulated_raw/{sample}_R2.fastq.gz"
+    R1 = "data/simulated/{sample}_raw_highcov_R1.fastq.gz",
+    R2 = "data/simulated/{sample}_raw_highcov_R2.fastq.gz"
   params:
-    basename = "data/simulated_raw/{sample}"
+    basename = "data/simulated/{sample}_raw_highcov"
   conda:
-    "conda_env/insilicoseq.yaml"
+    "envs/insilicoseq.yaml"
   message:
     "Simulating reads for sample {wildcards.sample}"
   log:
@@ -30,16 +32,15 @@ rule simulate_reads:
     gzip {params.basename}_R1.fastq {params.basename}_R2.fastq 2>>{log}
     """ 
 
-
 rule subsample:
   input:
     R1 = rules.simulate_reads.output.R1,
     R2 = rules.simulate_reads.output.R2,
   output: 
-    R1 = "data/simulated_raw/{sample}_lowcov_R1.fastq.gz" ,
-    R2 = "data/simulated_raw/{sample}_lowcov_R2.fastq.gz"
+    R1 = "data/simulated/{sample}_raw_lowcov_R1.fastq.gz" ,
+    R2 = "data/simulated/{sample}_raw_lowcov_R2.fastq.gz"
   conda:
-    "conda_env/rasusa.yaml"
+    "envs/rasusa.yaml"
   threads: 1 
   params: 0.2
   shell: 
@@ -54,12 +55,12 @@ rule trim_lowcov:
     R1 = rules.subsample.output.R1,
     R2 = rules.subsample.output.R2 
   output:
-    R1 = "data/simulated_trimmed/{sample}_lowcov_R1.fastq.gz",
-    R2 = "data/simulated_trimmed/{sample}_lowcov_R2.fastq.gz",
+    R1 = "data/simulated/{sample}_trimmed_lowcov_R1.fastq.gz",
+    R2 = "data/simulated/{sample}_trimmed_lowcov_R2.fastq.gz",
   params:
     general = "-e 15 -q 15 -u 40 -n 5 -l 15 -Y 30"
   conda:
-    "conda_env/fastp.yaml"
+    "envs/fastp.yaml"
   message:
     "Running fastp on sample {wildcards.sample}"
   log: "logs/trim/{sample}.log"
@@ -71,15 +72,15 @@ rule trim_lowcov:
 
 rule trim_highcov:
   input:
-    R1 = "data/simulated_raw/{sample}_R1.fastq.gz",
-    R2 = "data/simulated_raw/{sample}_R2.fastq.gz",
+    R1 = "data/simulated/{sample}_raw_highcov_R1.fastq.gz",
+    R2 = "data/simulated/{sample}_raw_highcov_R2.fastq.gz",
   output:
-    R1 = "data/simulated_trimmed/{sample}_R1.fastq.gz",
-    R2 = "data/simulated_trimmed/{sample}_R2.fastq.gz",
+    R1 = "data/simulated/{sample}_trimmed_highcov_R1.fastq.gz",
+    R2 = "data/simulated/{sample}_trimmed_highcov_R2.fastq.gz",
   params:
     general = "-e 15 -q 15 -u 40 -n 5 -l 15 -Y 30"
   conda:
-    "conda_env/fastp.yaml"
+    "envs/fastp.yaml"
   message:
         "Running fastp on sample {wildcards.sample}"
   log: "logs/trim/{sample}.log"
