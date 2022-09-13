@@ -1,11 +1,19 @@
-IDS, = glob_wildcards("input/assembly/{sample}_genomic.fna")
+(IDS, TRIMMED, COV) = glob_wildcards("data/simulated/{sample}_{trimmed}_{cov}_R1.fastq.gz")
+
+print(IDS)
+print(TRIMMED)
+print(COV)
+
+IDS_UNIQ = set(IDS)
+TRIMMED_UNIQ = set(TRIMMED)
+COV_UNIQ = set(COV)
 
 rule assemble:
   input:
-    R1 = "data/simulated_trimmed/{sample}_R1.fastq.gz",
-    R2 = "data/simulated_trimmed/{sample}_R2.fastq.gz",
+    R1 = "data/simulated_trimmed/{sample}_{trimmed}_{cov}_R1.fastq.gz",
+    R2 = "data/simulated_trimmed/{sample}_{trimmed}_{cov}_R2.fastq.gz",
   output:
-    contigs = "data/assembly/{sample}_contigs.fa
+    contigs = "data/assembly/{sample}_{trimmed}_{cov}_contigs.fa
   #params:
   conda:
     "envs/skesa_env.yaml"
